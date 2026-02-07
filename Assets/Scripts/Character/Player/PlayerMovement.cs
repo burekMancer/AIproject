@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class playerInputController : MonoBehaviour
 {
     private CharacterController _characterController;
+    private PlayerInput _playerInput;
 
     private InputAction _moveAction;
     private InputAction _lookAction;
@@ -19,6 +20,8 @@ public class playerInputController : MonoBehaviour
     [SerializeField] private float dashTime = 0.3f;
     [SerializeField] private float dashCooldown = 0.75f;
     [SerializeField] private ParticleSystem ps;
+    //[SerializeField] private GameObject swordPrefab;
+
     
     
     private float _dashCooldownTimer = 0f;
@@ -35,15 +38,24 @@ public class playerInputController : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _characterController = GetComponent<CharacterController>();
+        _playerInput = GetComponent < PlayerInput>();
         _playerCamera = Camera.main;
     }
 
     void Start()
     {
         Cursor.visible=false;
-        _moveAction = InputSystem.actions.FindAction("Move");
-        _lookAction = InputSystem.actions.FindAction("Look");
-        _dashAction = InputSystem.actions.FindAction("Dash");
+        
+        _moveAction = _playerInput.actions["Move"];
+        _lookAction = _playerInput.actions["Look"];
+        _dashAction = _playerInput.actions["Dash"];
+        
+       // Transform hand = _animator.GetBoneTransform(HumanBodyBones.RightHand);
+
+        // GameObject sword = Instantiate(swordPrefab, hand);
+        // sword.transform.localPosition = Vector3.zero;
+        // sword.transform.localRotation = Quaternion.identity;
+        
         
     }
 
@@ -54,37 +66,41 @@ public class playerInputController : MonoBehaviour
             _dashCooldownTimer -= Time.deltaTime;
 
         Vector2 moveValue = _moveAction.ReadValue<Vector2>();
+        
         Vector3 playerMovement =
             transform.forward * (moveValue.y * moveSpeed) + transform.right * (moveValue.x * moveSpeed);
 
         _characterController.Move(playerMovement * Time.deltaTime);
-        float speed = playerMovement.magnitude;
-        _animator.SetFloat("Speed", speed);
+        
+        _animator.SetFloat("Speed", playerMovement.magnitude);
 
 
         Vector2 lookValue = _lookAction.ReadValue<Vector2>();
 
-        _yaw += lookValue.x * rotSpeed * Time.deltaTime;
-        _botch -= lookValue.y * rotSpeed * Time.deltaTime;
-        _botch = Mathf.Clamp(_botch, -89f, 89f);
+         _yaw += lookValue.x * rotSpeed * Time.deltaTime;
+         _botch -= lookValue.y * rotSpeed * Time.deltaTime;
+         _botch = Mathf.Clamp(_botch, -89f, 89f);
 
         transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
-       
+
 
         if (_dashAction.WasPressedThisFrame() && !_isDashing && _dashCooldownTimer <= 0)
         {
             StartCoroutine(Dash());
-           
-        }
 
-        IEnumerator Dash()
+        }
+    }
+
+    IEnumerator Dash()
         {
             
             _isDashing = true;
-            _animator.SetTrigger("DashTrigger");
-            _dashCooldownTimer = dashCooldown;
+            
             ps.Clear();
             ps.Play();
+            
+            _animator.SetTrigger("DashTrigger");
+            _dashCooldownTimer = dashCooldown;
             
 
             // Get dash direction from input
@@ -96,7 +112,7 @@ public class playerInputController : MonoBehaviour
             }
             else
             {
-                // dash forward if no input (Souls behavior)
+              
                 _dashDirection = transform.forward;
             }
 
@@ -112,9 +128,9 @@ public class playerInputController : MonoBehaviour
                 yield return null;
             }
 
-            _isDashing = false;
             ps.Stop();
+            _isDashing = false;
             
         }
-    }
+    
 }
