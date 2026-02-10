@@ -20,7 +20,7 @@ public class playerInputController : MonoBehaviour
     [SerializeField] private float dashTime = 0.3f;
     [SerializeField] private float dashCooldown = 0.75f;
     [SerializeField] private ParticleSystem ps;
-    //[SerializeField] private GameObject swordPrefab;
+
 
     
     
@@ -50,11 +50,7 @@ public class playerInputController : MonoBehaviour
         _lookAction = _playerInput.actions["Look"];
         _dashAction = _playerInput.actions["Dash"];
         
-       // Transform hand = _animator.GetBoneTransform(HumanBodyBones.RightHand);
-
-        // GameObject sword = Instantiate(swordPrefab, hand);
-        // sword.transform.localPosition = Vector3.zero;
-        // sword.transform.localRotation = Quaternion.identity;
+     
         
         
     }
