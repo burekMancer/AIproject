@@ -7,66 +7,94 @@ public class BossMovement : MonoBehaviour
 {
     private Animator _animator;
     private NavMeshAgent _agent;
-    
+
 
     public Transform waypoint;
     public Transform player;
     public float speed;
-    
+
     public enum BossStates
     {
         idle,
         chasing,
         attacking,
-        rage
-        
-        
+        //rage
     }
 
     public BossStates CurState = BossStates.idle;
-    
-    
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _animator = GetComponent<Animator>();
         _agent = GetComponent<NavMeshAgent>();
-        
-
     }
 
-    
+
     void Update()
     {
-        
         _animator.SetFloat("speed", _agent.velocity.magnitude);
 
+        HandleTransitions();
+        HandleState();
+    }
+
+    private void HandleTransitions()
+    {
+        float dist = Vector3.Distance(transform.position, player.position);
+
+        if (dist < 40f)
+            CurState = BossStates.chasing;
+
+        if (dist < 2f)
+            CurState = BossStates.attacking;
+    }
+
+    private void HandleState()
+    {
         switch (CurState)
         {
             case BossStates.idle:
-                if (waypoint == null)
-                {
-                    Debug.Log("waypoint is null");
-                    break;
-                }
-                if (!_agent.pathPending && _agent.remainingDistance > 5f )
-                {
-                    _agent.SetDestination(waypoint.position);
-                }
-                else
-                {
-                    _agent.ResetPath();
-                    _agent.velocity = Vector3.zero;
-                }
+                Idle();
                 break;
+
             case BossStates.chasing:
-                _agent.SetDestination(player.position);
+                Chase();
                 break;
+
             case BossStates.attacking:
-                break;
-            case BossStates.rage :
+                Attack();
                 break;
         }
+    }
 
+    private void Idle()
+    {
+        float dist = Vector3.Distance(transform.position, player.position);
+
+        if (dist < 40f)
+        {
+            CurState = BossStates.chasing;
+            return;
+        }
+    }
+
+    private void Chase()
+    {
+        float dist = Vector3.Distance(transform.position, player.position);
+
+        if (dist < 2f)
+        {
+            CurState = BossStates.attacking;
+            return;
+        }
+
+        _agent.SetDestination(player.position);
+    }
+
+    private void Attack()
+    {
+        return;
     }
 }
