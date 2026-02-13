@@ -12,7 +12,8 @@ public class playerInputController : MonoBehaviour
     private InputAction _lookAction;
     private InputAction _dashAction;
     private Animator _animator;
-    
+    private Vector3 playerMovement;
+
     private Camera _playerCamera;
     [SerializeField] private float moveSpeed = 4f; //change this shi to 5 dont forget
     [SerializeField] private float rotSpeed = 31f;
@@ -22,60 +23,64 @@ public class playerInputController : MonoBehaviour
     [SerializeField] private ParticleSystem ps;
 
 
-    
-    
     private float _dashCooldownTimer = 0f;
     private Vector3 _dashDirection;
     private float _yaw = 0f;
     private float _botch = 0f;
     private bool _isDashing = false;
+    private float gravity = 9.81f;
+
+    private float vertVelocity;
 
     public Vector3 velocity;
 
-   
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         _animator = GetComponent<Animator>();
         _characterController = GetComponent<CharacterController>();
-        _playerInput = GetComponent < PlayerInput>();
+        _playerInput = GetComponent<PlayerInput>();
         _playerCamera = Camera.main;
     }
 
     void Start()
     {
-        Cursor.visible=false;
-        
+        Cursor.visible = false;
+
         _moveAction = _playerInput.actions["Move"];
         _lookAction = _playerInput.actions["Look"];
         _dashAction = _playerInput.actions["Dash"];
-        
-     
-        
-        
     }
 
     // Update is called once per frame
     void Update()
     {
+        Movement();
+    }
+
+    private void Movement()
+    {
         if (_dashCooldownTimer > 0)
             _dashCooldownTimer -= Time.deltaTime;
 
         Vector2 moveValue = _moveAction.ReadValue<Vector2>();
-        
-        Vector3 playerMovement =
+
+        playerMovement =
             transform.forward * (moveValue.y * moveSpeed) + transform.right * (moveValue.x * moveSpeed);
 
+        playerMovement.y = VerticalForceCalc();
+
         _characterController.Move(playerMovement * Time.deltaTime);
-        
-        _animator.SetFloat("Speed", playerMovement.magnitude);
+        //Anim();
+        _animator.SetFloat("Speed", moveValue.magnitude);
 
 
         Vector2 lookValue = _lookAction.ReadValue<Vector2>();
 
-         _yaw += lookValue.x * rotSpeed * Time.deltaTime;
-         _botch -= lookValue.y * rotSpeed * Time.deltaTime;
-         _botch = Mathf.Clamp(_botch, -89f, 89f);
+        _yaw += lookValue.x * rotSpeed * Time.deltaTime;
+        _botch -= lookValue.y * rotSpeed * Time.deltaTime;
+        _botch = Mathf.Clamp(_botch, -89f, 89f);
 
         transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
 
@@ -83,50 +88,67 @@ public class playerInputController : MonoBehaviour
         if (_dashAction.WasPressedThisFrame() && !_isDashing && _dashCooldownTimer <= 0)
         {
             StartCoroutine(Dash());
+        }
+    }
 
+    private float VerticalForceCalc()
+    {
+        if (_characterController.isGrounded)
+        {
+            vertVelocity = -1f;
+        }
+        else
+        {
+            vertVelocity -= gravity * Time.deltaTime;
+        }
+
+        return vertVelocity;
+    }
+
+    private void Anim()
+    {
+        while (playerMovement.x > 0 || playerMovement.z > 0)
+        {
+            _animator.SetFloat("Speed", 1f);
         }
     }
 
     IEnumerator Dash()
+    {
+        _isDashing = true;
+
+        ps.Clear();
+        ps.Play();
+
+        _animator.SetTrigger("DashTrigger");
+        _dashCooldownTimer = dashCooldown;
+
+
+        // Get dash direction from input
+        Vector2 moveValue = _moveAction.ReadValue<Vector2>();
+
+        if (moveValue.magnitude > 0.1f)
         {
-            
-            _isDashing = true;
-            
-            ps.Clear();
-            ps.Play();
-            
-            _animator.SetTrigger("DashTrigger");
-            _dashCooldownTimer = dashCooldown;
-            
-
-            // Get dash direction from input
-            Vector2 moveValue = _moveAction.ReadValue<Vector2>();
-
-            if (moveValue.magnitude > 0.1f)
-            {
-                _dashDirection = transform.forward * moveValue.y + transform.right * moveValue.x;
-            }
-            else
-            {
-              
-                _dashDirection = transform.forward;
-            }
-
-            _dashDirection.Normalize();
-
-            float timer = 0f;
-
-            while (timer < dashTime)
-            {
-                _characterController.Move(_dashDirection * dashPower * Time.deltaTime);
-
-                timer += Time.deltaTime;
-                yield return null;
-            }
-
-            ps.Stop();
-            _isDashing = false;
-            
+            _dashDirection = transform.forward * moveValue.y + transform.right * moveValue.x;
         }
-    
+        else
+        {
+            _dashDirection = transform.forward;
+        }
+
+        _dashDirection.Normalize();
+
+        float timer = 0f;
+
+        while (timer < dashTime)
+        {
+            _characterController.Move(_dashDirection * dashPower * Time.deltaTime);
+
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        ps.Stop();
+        _isDashing = false;
+    }
 }

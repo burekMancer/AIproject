@@ -7,6 +7,9 @@ public class BossMovement : MonoBehaviour
 {
     private Animator _animator;
     private NavMeshAgent _agent;
+    private bool _isAttacking = false;
+    private float _attackCooldown = 5f;
+    private float _attackCooldownTimer = 0f;
 
 
     public Transform waypoint;
@@ -34,7 +37,18 @@ public class BossMovement : MonoBehaviour
 
     void Update()
     {
-        _animator.SetFloat("speed", _agent.velocity.magnitude);
+        float speedPercent = 0f;
+
+        if (!_agent.pathPending && _agent.remainingDistance > _agent.stoppingDistance)
+        {
+            speedPercent = _agent.velocity.magnitude;
+        }
+
+        if (speedPercent < 0.1f)
+            speedPercent = 0f;
+
+        _animator.SetFloat("speed", speedPercent);
+
 
         HandleTransitions();
         HandleState();
@@ -44,11 +58,26 @@ public class BossMovement : MonoBehaviour
     {
         float dist = Vector3.Distance(transform.position, player.position);
 
-        if (dist < 40f)
-            CurState = BossStates.chasing;
+        if (_attackCooldownTimer > 0)
+            _attackCooldownTimer -= Time.deltaTime;
 
-        if (dist < 2f)
-            CurState = BossStates.attacking;
+        switch (CurState)
+        {
+            case BossStates.idle:
+                if (dist < 40f)
+                    CurState = BossStates.chasing;
+                break;
+
+            case BossStates.chasing:
+                if (dist <= _agent.stoppingDistance)
+                    CurState = BossStates.attacking;
+                break;
+
+            case BossStates.attacking:
+                if (dist > _agent.stoppingDistance + 1f)
+                    CurState = BossStates.chasing;
+                break;
+        }
     }
 
     private void HandleState()
@@ -56,45 +85,75 @@ public class BossMovement : MonoBehaviour
         switch (CurState)
         {
             case BossStates.idle:
+                _agent.isStopped = true;
                 Idle();
                 break;
 
             case BossStates.chasing:
+                _agent.isStopped = false;
                 Chase();
                 break;
 
             case BossStates.attacking:
+                _agent.isStopped = true;
                 Attack();
                 break;
         }
     }
 
+
     private void Idle()
     {
-        float dist = Vector3.Distance(transform.position, player.position);
+        _agent.isStopped = true;
 
-        if (dist < 40f)
+
+        Vector3 lookDir = player.position - transform.position;
+        lookDir.y = 0;
+
+        if (lookDir != Vector3.zero)
         {
-            CurState = BossStates.chasing;
-            return;
+            Quaternion targetRot = Quaternion.LookRotation(lookDir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 3f * Time.deltaTime);
         }
     }
+
 
     private void Chase()
     {
-        float dist = Vector3.Distance(transform.position, player.position);
+        Vector3 direction = (transform.position - player.position).normalized;
+        Vector3 targetPosition = player.position + direction * _agent.stoppingDistance;
 
-        if (dist < 2f)
-        {
-            CurState = BossStates.attacking;
-            return;
-        }
-
-        _agent.SetDestination(player.position);
+        _agent.SetDestination(targetPosition);
     }
+
 
     private void Attack()
     {
-        return;
+        _agent.isStopped = true;
+
+        Vector3 lookDir = player.position - transform.position;
+        lookDir.y = 0;
+
+        if (lookDir != Vector3.zero)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(lookDir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.deltaTime);
+        }
+
+        if (!_isAttacking && _attackCooldownTimer <= 0)
+        {
+            PerformAttack();
+        }
+
+        _agent.isStopped = false;
+    }
+
+
+    private void PerformAttack()
+    {
+        _isAttacking = true;
+        _animator.SetTrigger("Attack");
+        _attackCooldownTimer = _attackCooldown;
+        _isAttacking = false;
     }
 }
