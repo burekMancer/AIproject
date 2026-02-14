@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.AI;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using System.Collections;
+using UnityEngine.Serialization;
 
 public class BossMovement : MonoBehaviour
 {
@@ -10,11 +13,14 @@ public class BossMovement : MonoBehaviour
     private bool _isAttacking = false;
     private float _attackCooldown = 5f;
     private float _attackCooldownTimer = 0f;
+    private float hurtTimer;
 
 
+    public Collider rightHand;
     public Transform waypoint;
     public Transform player;
     public float speed;
+    public float hurtCooldown;
 
     public enum BossStates
     {
@@ -30,6 +36,7 @@ public class BossMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        hurtTimer = 0;
         _animator = GetComponent<Animator>();
         _agent = GetComponent<NavMeshAgent>();
     }
@@ -48,7 +55,8 @@ public class BossMovement : MonoBehaviour
             speedPercent = 0f;
 
         _animator.SetFloat("speed", speedPercent);
-
+        if (hurtTimer > 0)
+            hurtTimer -= Time.deltaTime;
 
         HandleTransitions();
         HandleState();
@@ -155,5 +163,26 @@ public class BossMovement : MonoBehaviour
         _animator.SetTrigger("Attack");
         _attackCooldownTimer = _attackCooldown;
         _isAttacking = false;
+    }
+
+    public void StartAttackF()
+    {
+        rightHand.enabled = true;
+    }
+
+    public void EndAttackF()
+    {
+        rightHand.enabled = false;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!rightHand.enabled) return;
+
+        if (other.CompareTag("Player") && hurtTimer <= 0)
+        {
+            print("hit");
+            hurtTimer = hurtCooldown;
+        }
     }
 }

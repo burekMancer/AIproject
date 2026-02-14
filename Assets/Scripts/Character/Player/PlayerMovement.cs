@@ -12,15 +12,20 @@ public class playerInputController : MonoBehaviour
     private InputAction _lookAction;
     private InputAction _dashAction;
     private Animator _animator;
-    private Vector3 playerMovement;
+    private Vector3 _playerMovement;
 
     private Camera _playerCamera;
-    [SerializeField] private float moveSpeed = 4f; //change this shi to 5 dont forget
-    [SerializeField] private float rotSpeed = 31f;
-    [SerializeField] private float dashPower = 20f;
-    [SerializeField] private float dashTime = 0.3f;
-    [SerializeField] private float dashCooldown = 0.75f;
+    private float rotSpeed = 31f;
+    private float dashPower = 20f;
+    private float dashTime = 0.3f;
+    private float dashCooldown = 0.75f;
     [SerializeField] private ParticleSystem ps;
+
+    [Header("Stats")] //
+    [SerializeField]
+    private float playerHealth = 100;
+
+    [SerializeField] private float moveSpeed = 4f;
 
 
     private float _dashCooldownTimer = 0f;
@@ -32,7 +37,7 @@ public class playerInputController : MonoBehaviour
 
     private float vertVelocity;
 
-    public Vector3 velocity;
+    //public Vector3 velocity;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -66,12 +71,12 @@ public class playerInputController : MonoBehaviour
 
         Vector2 moveValue = _moveAction.ReadValue<Vector2>();
 
-        playerMovement =
+        _playerMovement =
             transform.forward * (moveValue.y * moveSpeed) + transform.right * (moveValue.x * moveSpeed);
 
-        playerMovement.y = VerticalForceCalc();
+        _playerMovement.y = VerticalForceCalc();
 
-        _characterController.Move(playerMovement * Time.deltaTime);
+        _characterController.Move(_playerMovement * Time.deltaTime);
         //Anim();
         _animator.SetFloat("Speed", moveValue.magnitude);
 
@@ -107,7 +112,7 @@ public class playerInputController : MonoBehaviour
 
     private void Anim()
     {
-        while (playerMovement.x > 0 || playerMovement.z > 0)
+        while (_playerMovement.x > 0 || _playerMovement.z > 0)
         {
             _animator.SetFloat("Speed", 1f);
         }
