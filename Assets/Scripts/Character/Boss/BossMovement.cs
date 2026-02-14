@@ -21,6 +21,7 @@ public class BossMovement : MonoBehaviour
     public Transform player;
     public float speed;
     public float hurtCooldown;
+    public float dmg;
 
     public enum BossStates
     {
@@ -181,7 +182,8 @@ public class BossMovement : MonoBehaviour
 
         if (other.CompareTag("Player") && hurtTimer <= 0)
         {
-            print("hit");
+            PlayerMovement player = other.gameObject.GetComponent<PlayerMovement>();
+            player.TakeDamage(dmg);
             hurtTimer = hurtCooldown;
         }
     }

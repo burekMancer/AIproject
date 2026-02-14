@@ -1,9 +1,12 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Build.Content;
 using UnityEngine.InputSystem;
+using Cursor = UnityEngine.Cursor;
+using UnityEngine.UI;
 
-public class playerInputController : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     private CharacterController _characterController;
     private PlayerInput _playerInput;
@@ -13,6 +16,8 @@ public class playerInputController : MonoBehaviour
     private InputAction _dashAction;
     private Animator _animator;
     private Vector3 _playerMovement;
+    private bool _iFrames = false;
+
 
     private Camera _playerCamera;
     private float rotSpeed = 31f;
@@ -23,7 +28,14 @@ public class playerInputController : MonoBehaviour
 
     [Header("Stats")] //
     [SerializeField]
-    private float playerHealth = 100;
+    private float playerHealth;
+
+    [SerializeField] private float maxHealth = 100;
+
+    [SerializeField] private Image hpBar;
+
+    [SerializeField] private float iFrameTimer;
+    [SerializeField] private float iFrameDuration;
 
     [SerializeField] private float moveSpeed = 4f;
 
@@ -52,7 +64,7 @@ public class playerInputController : MonoBehaviour
     void Start()
     {
         Cursor.visible = false;
-
+        playerHealth = maxHealth;
         _moveAction = _playerInput.actions["Move"];
         _lookAction = _playerInput.actions["Look"];
         _dashAction = _playerInput.actions["Dash"];
@@ -155,5 +167,32 @@ public class playerInputController : MonoBehaviour
 
         ps.Stop();
         _isDashing = false;
+    }
+
+    public void TakeDamage(float dmg)
+    {
+        _animator.SetTrigger("Hit");
+        playerHealth -= dmg;
+        // iFrameTimer = iFrameDuration;
+        // _iFrames = true;
+        if (playerHealth <= 0)
+        {
+            Kill();
+        }
+
+        UpdateHPBar();
+    }
+
+    private void Kill()
+    {
+        if (!GameManager.instance.isGameOver)
+        {
+            GameManager.instance.GameOver();
+        }
+    }
+
+    void UpdateHPBar()
+    {
+        hpBar.fillAmount = playerHealth / maxHealth;
     }
 }
