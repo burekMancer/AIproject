@@ -10,7 +10,6 @@ public class PlayerMovement : MonoBehaviour
 {
     private CharacterController _characterController;
     private PlayerInput _playerInput;
-
     private InputAction _moveAction;
     private InputAction _lookAction;
     private InputAction _dashAction;

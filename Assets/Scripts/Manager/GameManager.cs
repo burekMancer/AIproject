@@ -124,6 +124,6 @@ public class GameManager : MonoBehaviour
     private void ShowDeathScreen()
     {
         deathScreen.SetActive(true);
-        Time.timeScale = 0f;
+        Cursor.visible = true;
     }
 }
