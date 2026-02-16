@@ -387,8 +387,8 @@ ModelImporter:
       name: Interact
       takeName: Interact
       internalID: 1701519168366769839
-      firstFrame: 6
-      lastFrame: 23
+      firstFrame: 4.8
+      lastFrame: 32.2
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -407,7 +407,21 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.0150842825
+        functionName: StartIFrame
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 74131a38ff4c32148861fe608f537fcc, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.5352268
+        functionName: EndIFrame
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 74131a38ff4c32148861fe608f537fcc, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

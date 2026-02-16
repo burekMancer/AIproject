@@ -360,7 +360,21 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.26037738
+        functionName: StartSpinF
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 282edbe8e4539ae4ab3cd664275eb0fc, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.8943396
+        functionName: EndSpinF
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 282edbe8e4539ae4ab3cd664275eb0fc, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

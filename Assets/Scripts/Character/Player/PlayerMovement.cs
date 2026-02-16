@@ -13,9 +13,10 @@ public class PlayerMovement : MonoBehaviour
     private InputAction _moveAction;
     private InputAction _lookAction;
     private InputAction _dashAction;
+    private InputAction _healAction;
     private Animator _animator;
     private Vector3 _playerMovement;
-    private bool _iFrames = false;
+    private bool _iFrames;
 
 
     private Camera _playerCamera;
@@ -31,7 +32,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float maxHealth = 100;
 
-    [SerializeField] private Image hpBar;
+    [SerializeField] public Image hpBar;
 
     [SerializeField] private float iFrameTimer;
     [SerializeField] private float iFrameDuration;
@@ -48,8 +49,6 @@ public class PlayerMovement : MonoBehaviour
 
     private float vertVelocity;
 
-    //public Vector3 velocity;
-
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -63,10 +62,12 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         Cursor.visible = false;
+        _iFrames = false;
         playerHealth = maxHealth;
         _moveAction = _playerInput.actions["Move"];
         _lookAction = _playerInput.actions["Look"];
         _dashAction = _playerInput.actions["Dash"];
+        UpdateHPBar();
     }
 
     // Update is called once per frame
@@ -168,12 +169,24 @@ public class PlayerMovement : MonoBehaviour
         _isDashing = false;
     }
 
+    private void StartIFrame()
+    {
+        _iFrames = true;
+        print("IFrames ON");
+    }
+
+    private void EndIFrame()
+    {
+        _iFrames = false;
+        print("IFrames OFF");
+    }
+
+
     public void TakeDamage(float dmg)
     {
+        if (_iFrames) return;
         _animator.SetTrigger("Hit");
         playerHealth -= dmg;
-        // iFrameTimer = iFrameDuration;
-        // _iFrames = true;
         if (playerHealth <= 0)
         {
             Kill();
