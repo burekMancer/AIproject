@@ -74,7 +74,7 @@ public class PlayerMovement : MonoBehaviour
         UpdateHPBar();
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         Movement();
@@ -196,7 +196,6 @@ public class PlayerMovement : MonoBehaviour
     private void TryAttack()
     {
         if (_isAttacking) return;
-        print("attack");
         _isAttacking = true;
         _animator.SetTrigger("PlayerAttack");
     }
@@ -230,23 +229,7 @@ public class PlayerMovement : MonoBehaviour
         weaponCollider.enabled = false;
         _isAttacking = false;
     }
-
-
-    // private void OnTriggerEnter(Collider other)
-    // {
-    //     if (!weaponCollider.enabled) return;
-    //
-    //     if (other.CompareTag("Boss"))
-    //     {
-    //         BossMovement boss = other.GetComponent<BossMovement>();
-    //         print("boss tag found");
-    //         if (boss != null)
-    //         {
-    //             print("sending dmg");
-    //             boss.TakeDamage(playerDamage);
-    //         }
-    //     }
-    // }
+    
 
     public void TakeDamage(float dmg)
     {

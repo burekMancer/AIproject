@@ -62,7 +62,6 @@ public class GameManager : MonoBehaviour
                 {
                     isGameOver = true;
                     Time.timeScale = 0f;
-                    Debug.Log("Game over");
                 }
 
                 break;
@@ -90,7 +89,6 @@ public class GameManager : MonoBehaviour
             ChangeState(GameState.Paused);
             Time.timeScale = 0f;
             pauseScreen.SetActive(true);
-            Debug.Log("Game Paused");
         }
     }
 
@@ -101,7 +99,6 @@ public class GameManager : MonoBehaviour
             ChangeState(prevState);
             Time.timeScale = 1f;
             pauseScreen.SetActive(false);
-            Debug.Log("Game resumed");
         }
     }
 
