@@ -78,6 +78,7 @@ public class BossMovement : MonoBehaviour
         if (speedPercent < 0.1f)
             speedPercent = 0f;
 
+
         _animator.SetFloat("speed", speedPercent);
         if (_hurtTimer > 0)
             _hurtTimer -= Time.deltaTime;
@@ -283,6 +284,7 @@ public class BossMovement : MonoBehaviour
 
     public void TakeDamage(float dmg)
     {
+        print("took dmg");
         health -= dmg;
         if (health <= 0)
         {

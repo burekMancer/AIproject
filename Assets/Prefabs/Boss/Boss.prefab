@@ -9927,6 +9927,10 @@ PrefabInstance:
       propertyPath: m_ApplyRootMotion
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7116785954168059035, guid: c10219056f42eda4ca32ee67389b8f59, type: 3}
+      propertyPath: m_TagString
+      value: Boss
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -10004,15 +10008,16 @@ MonoBehaviour:
   aoeWarn: {fileID: 7752069328944009369}
   rightHand: {fileID: 2704182262957135977}
   spinCollider: {fileID: 5480970415571211475}
-  waypoint: {fileID: 0}
   player: {fileID: 0}
-  health: 0
+  hp: {fileID: 0}
+  health: 500
+  bossHealth: 500
   meleeRange: 3
   spinRange: 6
   speed: 5
   hurtCooldown: 1
-  dmg: 20
-  spindmg: 40
+  dmg: 10
+  spindmg: 30
   CurState: 0
 --- !u!136 &186924666800755581
 CapsuleCollider:
@@ -10033,8 +10038,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2.34
+  m_Radius: 0.78
+  m_Height: 2.74
   m_Direction: 1
   m_Center: {x: 0, y: 1.14, z: 0}
 --- !u!54 &811416328530086668

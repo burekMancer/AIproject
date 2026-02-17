@@ -204,7 +204,26 @@ public class PlayerMovement : MonoBehaviour
     public void EnableHitbox()
     {
         weaponCollider.enabled = true;
+
+        Collider[] hits = Physics.OverlapBox(
+            weaponCollider.bounds.center,
+            weaponCollider.bounds.extents,
+            weaponCollider.transform.rotation
+        );
+
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Boss"))
+            {
+                BossMovement boss = hit.GetComponent<BossMovement>();
+                if (boss != null)
+                {
+                    boss.TakeDamage(playerDamage);
+                }
+            }
+        }
     }
+
 
     public void DisableHitbox()
     {
@@ -213,18 +232,21 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!weaponCollider.enabled) return;
-        if (other.CompareTag("Boss"))
-        {
-            BossMovement boss = other.GetComponent<BossMovement>();
-            if (boss != null)
-            {
-                boss.TakeDamage(playerDamage);
-            }
-        }
-    }
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     if (!weaponCollider.enabled) return;
+    //
+    //     if (other.CompareTag("Boss"))
+    //     {
+    //         BossMovement boss = other.GetComponent<BossMovement>();
+    //         print("boss tag found");
+    //         if (boss != null)
+    //         {
+    //             print("sending dmg");
+    //             boss.TakeDamage(playerDamage);
+    //         }
+    //     }
+    // }
 
     public void TakeDamage(float dmg)
     {
