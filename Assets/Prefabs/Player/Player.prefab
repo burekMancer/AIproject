@@ -5398,13 +5398,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74131a38ff4c32148861fe608f537fcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 7.67
-  rotSpeed: 31
-  dashPower: 20
-  dashTime: 0.3
-  dashCooldown: 0.75
+  hpBar: {fileID: 0}
   ps: {fileID: 98438027645015352}
-  velocity: {x: 0, y: 0, z: 0}
+  weaponCollider: {fileID: 0}
+  playerHealth: 0
+  maxHealth: 100
+  iFrameTimer: 0
+  iFrameDuration: 0.5
+  moveSpeed: 7.67
 --- !u!143 &4907709757050797942
 CharacterController:
   m_ObjectHideFlags: 0
@@ -5424,7 +5425,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 2.21
-  m_Radius: 0.59
+  m_Radius: 0.81
   m_SlopeLimit: 0.21
   m_StepOffset: 0.01
   m_SkinWidth: 0.08

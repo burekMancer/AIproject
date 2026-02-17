@@ -244,7 +244,21 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.109433964
+        functionName: EnableHitbox
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 74131a38ff4c32148861fe608f537fcc, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.57409674
+        functionName: DisableHitbox
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 74131a38ff4c32148861fe608f537fcc, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

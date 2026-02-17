@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,46 +9,47 @@ using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public Image hpBar;
+    public ParticleSystem ps;
+    public Collider weaponCollider;
+
     private CharacterController _characterController;
     private PlayerInput _playerInput;
+
+    private Animator _animator;
+
+    //Vectors
+    private Vector3 _playerMovement;
+    private Vector3 _dashDirection;
+
+    private Camera _playerCamera;
+
+    //InputActions
     private InputAction _moveAction;
     private InputAction _lookAction;
     private InputAction _dashAction;
     private InputAction _healAction;
-    private Animator _animator;
-    private Vector3 _playerMovement;
+    private InputAction _attackAction;
+
+    private float gravity = 9.81f;
+
+    private bool _isAttacking;
+    private bool _isHealing = false;
     private bool _iFrames;
-
-
-    private Camera _playerCamera;
     private float rotSpeed = 31f;
     private float dashPower = 20f;
     private float dashTime = 0.3f;
     private float dashCooldown = 0.75f;
-    [SerializeField] private ParticleSystem ps;
-
-    [Header("Stats")] //
-    [SerializeField]
-    private float playerHealth;
-
-    [SerializeField] private float maxHealth = 100;
-
-    [SerializeField] public Image hpBar;
-
-    [SerializeField] private float iFrameTimer;
-    [SerializeField] private float iFrameDuration;
-
-    [SerializeField] private float moveSpeed = 4f;
-
-
     private float _dashCooldownTimer = 0f;
-    private Vector3 _dashDirection;
     private float _yaw = 0f;
     private float _botch = 0f;
     private bool _isDashing = false;
-    private float gravity = 9.81f;
-
     private float vertVelocity;
+
+    [Header("Stats")] [SerializeField] private float playerHealth;
+    [SerializeField] private float maxHealth;
+    [SerializeField] private float moveSpeed; //7.67
+    [SerializeField] private float playerDamage;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -67,6 +69,8 @@ public class PlayerMovement : MonoBehaviour
         _moveAction = _playerInput.actions["Move"];
         _lookAction = _playerInput.actions["Look"];
         _dashAction = _playerInput.actions["Dash"];
+        _healAction = _playerInput.actions["Heal"];
+        _attackAction = _playerInput.actions["Attack"];
         UpdateHPBar();
     }
 
@@ -74,6 +78,15 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         Movement();
+        if (_attackAction.WasPressedThisFrame())
+        {
+            if (!_isDashing && !_isHealing && !_isAttacking)
+            {
+                TryAttack();
+            }
+        }
+
+        //Debug.Log($"Dash:{_isDashing} Attack:{_isAttacking} Heal:{_isHealing}");
     }
 
     private void Movement()
@@ -90,7 +103,7 @@ public class PlayerMovement : MonoBehaviour
 
         _characterController.Move(_playerMovement * Time.deltaTime);
         //Anim();
-        _animator.SetFloat("Speed", moveValue.magnitude);
+        _animator.SetFloat("Speed", moveValue.magnitude, 0.1f, Time.deltaTime);
 
 
         Vector2 lookValue = _lookAction.ReadValue<Vector2>();
@@ -102,11 +115,12 @@ public class PlayerMovement : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
 
 
-        if (_dashAction.WasPressedThisFrame() && !_isDashing && _dashCooldownTimer <= 0)
+        if (_dashAction.WasPressedThisFrame() && !_isDashing && _dashCooldownTimer <= 0 && !_isAttacking)
         {
             StartCoroutine(Dash());
         }
     }
+
 
     private float VerticalForceCalc()
     {
@@ -172,20 +186,51 @@ public class PlayerMovement : MonoBehaviour
     private void StartIFrame()
     {
         _iFrames = true;
-        print("IFrames ON");
     }
 
     private void EndIFrame()
     {
         _iFrames = false;
-        print("IFrames OFF");
     }
 
+    private void TryAttack()
+    {
+        if (_isAttacking) return;
+        print("attack");
+        _isAttacking = true;
+        _animator.SetTrigger("PlayerAttack");
+    }
+
+    public void EnableHitbox()
+    {
+        weaponCollider.enabled = true;
+    }
+
+    public void DisableHitbox()
+    {
+        weaponCollider.enabled = false;
+        _isAttacking = false;
+    }
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!weaponCollider.enabled) return;
+        if (other.CompareTag("Boss"))
+        {
+            BossMovement boss = other.GetComponent<BossMovement>();
+            if (boss != null)
+            {
+                boss.TakeDamage(playerDamage);
+            }
+        }
+    }
 
     public void TakeDamage(float dmg)
     {
         if (_iFrames) return;
         _animator.SetTrigger("Hit");
+        InterruptAttack();
         playerHealth -= dmg;
         if (playerHealth <= 0)
         {
@@ -194,6 +239,12 @@ public class PlayerMovement : MonoBehaviour
 
         UpdateHPBar();
     }
+
+    public void InterruptAttack()
+    {
+        _isAttacking = false;
+    }
+
 
     private void Kill()
     {

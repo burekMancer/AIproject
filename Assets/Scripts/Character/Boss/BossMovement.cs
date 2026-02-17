@@ -1,36 +1,46 @@
 using UnityEngine;
 using UnityEngine.AI;
-using NUnit.Framework;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using System.Collections;
-using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class BossMovement : MonoBehaviour
 {
-    private bool _isTelegraphingSpin = false;
-    private float _telegraphTimer = 0f;
-    private float _telegraphDuration = 0.5f;
+    //Drag n Drops
     private Animator _animator;
     private NavMeshAgent _agent;
-    private bool _isAttacking = false;
-    private float _attackCooldown = 4f;
-    private float _attackCooldownTimer = 0f;
-    private float _spinCooldownTimer = 0f;
-    private float _spinCooldown = 10f;
-    private float _hurtTimer;
-    private float _timeBetweenAttacks = 1.2f;
-    private float _attackTimer = 0f;
-
-
-    public float meleeRange;
     public ParticleSystem aoe;
     public ParticleSystem aoeWarn;
-    public float spinRange;
     public Collider rightHand;
     public Collider spinCollider;
-    public Transform waypoint;
     public Transform player;
+    public Image hp;
+
+    //attack related 
+
+    //bools
+    private bool _isTelegraphingSpin;
+
+    private bool _isAttacking;
+
+    //Base CDs
+    private float _telegraphDuration = 1f;
+    private float _meleeCooldown = 4f;
+    private float _spinCooldown = 20f;
+    private float _timeBetweenAttacks = 2.3f;
+
+    //Timers
+    private float _spinCooldownTimer = 0f;
+    private float _meleeCooldownTimer = 0f;
+    private float _hurtTimer;
+    private float _telegraphTimer = 0f;
+    private float _attackTimer = 0f;
+
+    [Header("Stats")] // 
+    public float health;
+
+    public float bossHealth;
+    public float meleeRange;
+    public float spinRange;
     public float speed;
     public float hurtCooldown;
     public float dmg;
@@ -41,19 +51,18 @@ public class BossMovement : MonoBehaviour
         Idle,
         Chasing,
         Attacking,
-        //SpinAttack,
         //rage
     }
 
     public BossStates CurState = BossStates.Idle;
 
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _hurtTimer = 0;
         _animator = GetComponent<Animator>();
         _agent = GetComponent<NavMeshAgent>();
+        UpdateHPBar();
     }
 
 
@@ -81,8 +90,8 @@ public class BossMovement : MonoBehaviour
     {
         float dist = Vector3.Distance(transform.position, player.position);
 
-        if (_attackCooldownTimer > 0)
-            _attackCooldownTimer -= Time.deltaTime;
+        if (_meleeCooldownTimer > 0)
+            _meleeCooldownTimer -= Time.deltaTime;
         if (_spinCooldownTimer > 0)
             _spinCooldownTimer -= Time.deltaTime;
         if (_attackTimer > 0)
@@ -131,9 +140,6 @@ public class BossMovement : MonoBehaviour
                 _agent.isStopped = true;
                 Attack();
                 break;
-            // case BossStates.SpinAttack:
-            //     Spin();
-            //     break;
         }
     }
 
@@ -180,9 +186,9 @@ public class BossMovement : MonoBehaviour
 
         if (!_isAttacking)
         {
-            if (dist <= meleeRange && _attackCooldownTimer <= 0 && _attackTimer <= 0)
+            if (dist <= meleeRange && _meleeCooldownTimer <= 0 && _attackTimer <= 0 && !_isTelegraphingSpin)
                 PerformAttack();
-            else if (!_isAttacking && _spinCooldownTimer <= 0 && !_isTelegraphingSpin)
+            else if (!_isAttacking && _spinCooldownTimer <= 0 && _attackTimer <= 0 && !_isTelegraphingSpin)
             {
                 _agent.isStopped = true;
                 StartCoroutine(TelegraphSpin());
@@ -195,8 +201,6 @@ public class BossMovement : MonoBehaviour
         _isAttacking = true;
         //Range();
         _animator.SetTrigger("Attack");
-        _attackCooldownTimer = _attackCooldown;
-        _attackTimer = _timeBetweenAttacks;
     }
 
     private IEnumerator TelegraphSpin()
@@ -224,8 +228,6 @@ public class BossMovement : MonoBehaviour
         _isAttacking = true;
         print("spin attack");
         _animator.SetTrigger("Spin");
-        _attackTimer = _timeBetweenAttacks;
-        _spinCooldownTimer = _spinCooldown;
     }
 
     public void StartAttackF()
@@ -237,6 +239,8 @@ public class BossMovement : MonoBehaviour
     {
         rightHand.enabled = false;
         _isAttacking = false;
+        _meleeCooldownTimer = _meleeCooldown;
+        _attackTimer = _timeBetweenAttacks;
     }
 
     private void StartSpinF()
@@ -254,6 +258,8 @@ public class BossMovement : MonoBehaviour
         _agent.updateRotation = true;
         spinCollider.enabled = false;
         aoe.Stop();
+        _attackTimer = _timeBetweenAttacks;
+        _spinCooldownTimer = _spinCooldown;
         _isAttacking = false;
     }
 
@@ -273,5 +279,35 @@ public class BossMovement : MonoBehaviour
             player.TakeDamage(spindmg);
             _hurtTimer = hurtCooldown;
         }
+    }
+
+    public void TakeDamage(float dmg)
+    {
+        health -= dmg;
+        if (health <= 0)
+        {
+            Die();
+        }
+
+        UpdateHPBar();
+    }
+
+    public void Die()
+    {
+        _animator.SetTrigger("BossDeath");
+        if (!GameManager.instance.isGameOver)
+        {
+            GameManager.instance.Victory();
+        }
+    }
+
+    private void BossDeathAnimation()
+    {
+        Destroy(gameObject);
+    }
+
+    void UpdateHPBar()
+    {
+        hp.fillAmount = health / bossHealth;
     }
 }

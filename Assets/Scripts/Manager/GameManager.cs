@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
         Gameplay,
         Paused,
         GameOver,
+        Victory
     }
 
     public GameState prevState;
@@ -23,6 +24,7 @@ public class GameManager : MonoBehaviour
     //Screens
     public GameObject pauseScreen;
     public GameObject deathScreen;
+    public GameObject victoryScreen;
 
 
     public bool isGameOver = false;
@@ -62,6 +64,14 @@ public class GameManager : MonoBehaviour
                     Time.timeScale = 0f;
                     Debug.Log("Game over");
                 }
+
+                break;
+            case GameState.Victory:
+            {
+                isGameOver = true;
+                Time.timeScale = 0.5f;
+            }
+
 
                 break;
         }
@@ -124,6 +134,18 @@ public class GameManager : MonoBehaviour
     private void ShowDeathScreen()
     {
         deathScreen.SetActive(true);
+        Cursor.visible = true;
+    }
+
+    public void Victory()
+    {
+        ChangeState(GameState.Victory);
+        ShowVictoryScreen();
+    }
+
+    private void ShowVictoryScreen()
+    {
+        victoryScreen.SetActive(true);
         Cursor.visible = true;
     }
 }
