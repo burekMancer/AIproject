@@ -5450,7 +5450,7 @@ MonoBehaviour:
   playerHealth: 100
   maxHealth: 100
   moveSpeed: 7.67
-  playerDamage: 20
+  playerDamage: 10
 --- !u!143 &4907709757050797942
 CharacterController:
   m_ObjectHideFlags: 0

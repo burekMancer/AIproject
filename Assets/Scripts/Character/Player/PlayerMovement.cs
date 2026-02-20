@@ -2,8 +2,10 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Build.Content;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using Cursor = UnityEngine.Cursor;
 using UnityEngine.UI;
 
@@ -12,9 +14,12 @@ public class PlayerMovement : MonoBehaviour
     public Image hpBar;
     public ParticleSystem ps;
     public Collider weaponCollider;
+    public TMP_Text healText;
 
     private CharacterController _characterController;
     private PlayerInput _playerInput;
+    [SerializeField] private BossMovement boss;
+
 
     private Animator _animator;
 
@@ -35,16 +40,19 @@ public class PlayerMovement : MonoBehaviour
 
     private bool _isAttacking;
     private bool _isHealing = false;
+    private bool _isDashing = false;
     private bool _iFrames;
     private float rotSpeed = 31f;
     private float dashPower = 20f;
     private float dashTime = 0.3f;
     private float dashCooldown = 0.75f;
+    private float _healValue = 40f;
     private float _dashCooldownTimer = 0f;
     private float _yaw = 0f;
     private float _botch = 0f;
-    private bool _isDashing = false;
     private float vertVelocity;
+
+    public static int healCount = 5;
 
     [Header("Stats")] [SerializeField] private float playerHealth;
     [SerializeField] private float maxHealth;
@@ -72,17 +80,28 @@ public class PlayerMovement : MonoBehaviour
         _healAction = _playerInput.actions["Heal"];
         _attackAction = _playerInput.actions["Attack"];
         UpdateHPBar();
+        InvokeRepeating(nameof(UpdateHealFlask), 0, 0.1f);
     }
 
 
     void Update()
     {
         Movement();
+        if (playerHealth > maxHealth)
+            playerHealth = maxHealth;
         if (_attackAction.WasPressedThisFrame())
         {
             if (!_isDashing && !_isHealing && !_isAttacking)
             {
                 TryAttack();
+            }
+        }
+
+        if (_healAction.WasPressedThisFrame())
+        {
+            if (!_isDashing && !_isHealing && !_isAttacking)
+            {
+                TryHeal();
             }
         }
 
@@ -223,13 +242,27 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void HealingFrame()
+    {
+        _isHealing = true;
+        playerHealth += _healValue;
+        UpdateHPBar();
+        healCount--;
+        boss.Rage();
+    }
+
+    public void EndHealing()
+    {
+        _isHealing = false;
+    }
+
 
     public void DisableHitbox()
     {
         weaponCollider.enabled = false;
         _isAttacking = false;
     }
-    
+
 
     public void TakeDamage(float dmg)
     {
@@ -248,6 +281,7 @@ public class PlayerMovement : MonoBehaviour
     public void InterruptAttack()
     {
         _isAttacking = false;
+        _isHealing = false;
     }
 
 
@@ -262,5 +296,20 @@ public class PlayerMovement : MonoBehaviour
     void UpdateHPBar()
     {
         hpBar.fillAmount = playerHealth / maxHealth;
+    }
+
+    void UpdateHealFlask()
+    {
+        healText.text = (healCount).ToString();
+    }
+
+    private void TryHeal()
+    {
+        if (_isHealing) return;
+        if (healCount > 0 && playerHealth < 100)
+        {
+            _isHealing = true;
+            _animator.SetTrigger("Heal");
+        }
     }
 }

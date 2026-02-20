@@ -10,10 +10,16 @@ public class BossMovement : MonoBehaviour
     private NavMeshAgent _agent;
     public ParticleSystem aoe;
     public ParticleSystem aoeWarn;
+    public ParticleSystem bossDeath;
     public Collider rightHand;
     public Collider spinCollider;
     public Transform player;
     public Image hp;
+
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color rageColor = Color.red;
+    private int healsUsed = 0;
+
 
     //attack related 
 
@@ -21,6 +27,7 @@ public class BossMovement : MonoBehaviour
     private bool _isTelegraphingSpin;
 
     private bool _isAttacking;
+    private bool _isDead = false;
 
     //Base CDs
     private float _telegraphDuration = 1f;
@@ -82,9 +89,11 @@ public class BossMovement : MonoBehaviour
         _animator.SetFloat("speed", speedPercent);
         if (_hurtTimer > 0)
             _hurtTimer -= Time.deltaTime;
-
-        HandleTransitions();
-        HandleState();
+        if (!_isDead)
+        {
+            HandleTransitions();
+            HandleState();
+        }
     }
 
     private void HandleTransitions()
@@ -116,10 +125,6 @@ public class BossMovement : MonoBehaviour
                 if (dist > _agent.stoppingDistance + 1f)
                     CurState = BossStates.Chasing;
                 break;
-            // case BossStates.SpinAttack:
-            //     if (dist > spinRange)
-            //         CurState = BossStates.Chasing;
-            //     break;
         }
     }
 
@@ -200,7 +205,6 @@ public class BossMovement : MonoBehaviour
     private void PerformAttack()
     {
         _isAttacking = true;
-        //Range();
         _animator.SetTrigger("Attack");
     }
 
@@ -247,7 +251,6 @@ public class BossMovement : MonoBehaviour
     private void StartSpinF()
     {
         _agent.updateRotation = false;
-        // _agent.isStopped = true;
         spinCollider.enabled = true;
         aoe.Clear();
         aoe.Play();
@@ -284,7 +287,6 @@ public class BossMovement : MonoBehaviour
 
     public void TakeDamage(float dmg)
     {
-        print("took dmg");
         health -= dmg;
         if (health <= 0)
         {
@@ -297,16 +299,30 @@ public class BossMovement : MonoBehaviour
     public void Die()
     {
         _animator.SetTrigger("BossDeath");
+    }
+
+    private IEnumerator BossDeathAnimation()
+    {
+        _isDead = true;
+        _agent.isStopped = true;
+        yield return new WaitForSeconds(1);
+        bossDeath.Play();
+        Destroy(gameObject);
         if (!GameManager.instance.isGameOver)
         {
             GameManager.instance.Victory();
         }
     }
 
-    private void BossDeathAnimation()
+    public void Rage()
     {
-        Destroy(gameObject);
+        healsUsed++;
+        dmg += 20;
+        float t = Mathf.Clamp01((float)healsUsed / PlayerMovement.healCount);
+
+        hp.color = Color.Lerp(normalColor, rageColor, t);
     }
+
 
     void UpdateHPBar()
     {
