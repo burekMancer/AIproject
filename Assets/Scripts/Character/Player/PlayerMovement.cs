@@ -1,11 +1,7 @@
-using System;
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Build.Content;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using Cursor = UnityEngine.Cursor;
 using UnityEngine.UI;
 
@@ -89,6 +85,7 @@ public class PlayerMovement : MonoBehaviour
         Movement();
         if (playerHealth > maxHealth)
             playerHealth = maxHealth;
+
         if (_attackAction.WasPressedThisFrame())
         {
             if (!_isDashing && !_isHealing && !_isAttacking)
@@ -126,11 +123,9 @@ public class PlayerMovement : MonoBehaviour
 
 
         Vector2 lookValue = _lookAction.ReadValue<Vector2>();
-
         _yaw += lookValue.x * rotSpeed * Time.deltaTime;
         _botch -= lookValue.y * rotSpeed * Time.deltaTime;
         _botch = Mathf.Clamp(_botch, -89f, 89f);
-
         transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
 
 
@@ -306,7 +301,7 @@ public class PlayerMovement : MonoBehaviour
     private void TryHeal()
     {
         if (_isHealing) return;
-        if (healCount > 0 && playerHealth < 100)
+        if (healCount > 0 && playerHealth < maxHealth)
         {
             _isHealing = true;
             _animator.SetTrigger("Heal");

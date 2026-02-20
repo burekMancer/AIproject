@@ -58,7 +58,6 @@ public class BossMovement : MonoBehaviour
         Idle,
         Chasing,
         Attacking,
-        //rage
     }
 
     public BossStates CurState = BossStates.Idle;
@@ -96,7 +95,7 @@ public class BossMovement : MonoBehaviour
         }
     }
 
-    private void HandleTransitions()
+    private void HandleTransitions() 
     {
         float dist = Vector3.Distance(transform.position, player.position);
 
@@ -213,7 +212,6 @@ public class BossMovement : MonoBehaviour
         _isTelegraphingSpin = true;
 
         _agent.isStopped = true;
-        // glow mb?
         aoeWarn.Clear();
         aoeWarn.Play();
 
@@ -317,7 +315,8 @@ public class BossMovement : MonoBehaviour
     public void Rage()
     {
         healsUsed++;
-        dmg += 20;
+        dmg += 10;
+        spindmg += 5;
         float t = Mathf.Clamp01((float)healsUsed / PlayerMovement.healCount);
 
         hp.color = Color.Lerp(normalColor, rageColor, t);
